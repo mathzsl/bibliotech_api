@@ -33,7 +33,7 @@ public class BookController {
       return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
     } catch (RuntimeException e) {
       
-      return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
   }
 
