@@ -1,5 +1,7 @@
 package br.com.bibliotech.bibliotechapi.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,5 +21,9 @@ public class AuthorService {
     newAuthor.setNationality(authorDTO.getNationality());
 
     return authorRepository.save(newAuthor);
+  }
+
+  public List<Author> findAllAuthors() {
+    return authorRepository.findAll();
   }
 }
