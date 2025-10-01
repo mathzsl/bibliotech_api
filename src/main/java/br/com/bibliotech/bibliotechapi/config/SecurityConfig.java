@@ -27,22 +27,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                            "/v3/api-docs/**",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-
-                        .requestMatchers(HttpMethod.POST, "/authors").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/authors/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/authors/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/books").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/books/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/books/**").hasRole("ADMIN")
-
-                    
+                        .requestMatchers(HttpMethod.POST, "/authors", "/books").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/authors/**", "/books/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/authors/**", "/books/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/loans").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/loans/me").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/loans").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/loans/*/return").authenticated()
-
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
