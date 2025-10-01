@@ -8,4 +8,7 @@ import org.springframework.stereotype.Repository;
 import br.com.bibliotech.bibliotechapi.model.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {}
+public interface UserRepository extends JpaRepository<User, UUID> {
+
+  User findByEmail(String email);
+}
