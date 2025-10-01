@@ -1,72 +1,76 @@
 package br.com.bibliotech.bibliotechapi.controller;
 
-import java.util.List;
-import java.util.UUID;
-
+import br.com.bibliotech.bibliotechapi.dto.AuthorResponseDTO;
+import br.com.bibliotech.bibliotechapi.dto.BookDTO;
+import br.com.bibliotech.bibliotechapi.dto.BookResponseDTO;
+import br.com.bibliotech.bibliotechapi.model.Book;
+import br.com.bibliotech.bibliotechapi.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import br.com.bibliotech.bibliotechapi.dto.BookDTO;
-import br.com.bibliotech.bibliotechapi.model.Book;
-import br.com.bibliotech.bibliotechapi.service.BookService;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/books")
 public class BookController {
-  
-  @Autowired
-  private BookService bookService;
 
-  @PostMapping
-  public ResponseEntity<Book> createBook(@RequestBody BookDTO bookDTO) {
-    try {
-      Book createdBook = bookService.createBook(bookDTO);
-      return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
-    } catch (RuntimeException e) {
-      
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    @Autowired
+    private BookService bookService;
+
+    @PostMapping
+    public ResponseEntity<BookResponseDTO> createBook(@RequestBody BookDTO bookDTO) {
+        Book newBook = bookService.createBook(bookDTO);
+        BookResponseDTO responseDTO = convertToBookResponseDTO(newBook);
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
-  }
 
-  @GetMapping
-  public ResponseEntity<List<Book>> getAllBooks() {
-    List<Book> books = bookService.findAllBooks();
-    return new ResponseEntity<>(books, HttpStatus.OK);
-  }
-
-  @GetMapping("/{id}")
-  public ResponseEntity<Book> getBookById(@PathVariable UUID id) {
-    return bookService.findBookById(id)
-      .map(book -> new ResponseEntity<>(book, HttpStatus.OK))
-      .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-  }
-
-  @PutMapping("/{id}")
-  public ResponseEntity<Book> updateBook(@PathVariable UUID id, @RequestBody BookDTO bookDetails) {
-    try {
-      Book updatedBook = bookService.updateBook(id, bookDetails);
-      return new ResponseEntity<>(updatedBook, HttpStatus.OK);
-    } catch (RuntimeException e) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @GetMapping
+    public ResponseEntity<List<BookResponseDTO>> getAllBooks() {
+        List<Book> books = bookService.findAllBooks();
+        List<BookResponseDTO> responseDTOs = books.stream()
+                .map(this::convertToBookResponseDTO)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
     }
-  }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<HttpStatus> deleteBook(@PathVariable UUID id) {
-    try {
-      bookService.deleteBook(id);
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    } catch (RuntimeException e) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @GetMapping("/{id}")
+    public ResponseEntity<BookResponseDTO> getBookById(@PathVariable UUID id) {
+        return bookService.findBookById(id)
+                .map(this::convertToBookResponseDTO)
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-  }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable UUID id, @RequestBody BookDTO bookDetails) {
+        Book updatedBook = bookService.updateBook(id, bookDetails);
+        BookResponseDTO responseDTO = convertToBookResponseDTO(updatedBook);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteBook(@PathVariable UUID id) {
+        bookService.deleteBook(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private BookResponseDTO convertToBookResponseDTO(Book book) {
+        AuthorResponseDTO authorDTO = new AuthorResponseDTO(
+                book.getAuthor().getId(),
+                book.getAuthor().getName(),
+                book.getAuthor().getNationality()
+        );
+        return new BookResponseDTO(
+                book.getId(),
+                book.getTitle(),
+                book.getCategory(),
+                book.getPublicationYear(),
+                book.getAvailableCopies(),
+                authorDTO
+        );
+    }
 }

@@ -4,6 +4,7 @@ import br.com.bibliotech.bibliotechapi.dto.AuthorInLoanResponseDTO;
 import br.com.bibliotech.bibliotechapi.dto.BookInLoanResponseDTO;
 import br.com.bibliotech.bibliotechapi.dto.LoanDTO;
 import br.com.bibliotech.bibliotechapi.dto.LoanResponseDTO;
+import br.com.bibliotech.bibliotechapi.exceptions.ResourceNotFoundException;
 import br.com.bibliotech.bibliotechapi.model.Book;
 import br.com.bibliotech.bibliotechapi.model.Loan;
 import br.com.bibliotech.bibliotechapi.model.User;
@@ -33,10 +34,10 @@ public class LoanService {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Book book = bookRepository.findById(loanDTO.getBookId())
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + loanDTO.getBookId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + loanDTO.getBookId()));
 
         if (book.getAvailableCopies() <= 0) {
-            throw new RuntimeException("No available copies for loan.");
+            throw new ResourceNotFoundException("No available copies for loan.");
         }
 
         book.setAvailableCopies(book.getAvailableCopies() - 1);
@@ -71,10 +72,10 @@ public class LoanService {
     public LoanResponseDTO returnBook(UUID loanId) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Loan loan = loanRepository.findById(loanId)
-                .orElseThrow(() -> new RuntimeException("Loan not found with id: " + loanId));
+                .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + loanId));
 
         if (user.getRole() == Role.USER && !loan.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied. You can only return your own loans.");
+            throw new ResourceNotFoundException("Access denied. You can only return your own loans.");
         }
 
         loan.setStatus(Status.RETURNED);

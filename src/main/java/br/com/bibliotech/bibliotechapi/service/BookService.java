@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.bibliotech.bibliotechapi.dto.BookDTO;
+import br.com.bibliotech.bibliotechapi.exceptions.ResourceNotFoundException;
 import br.com.bibliotech.bibliotechapi.model.Author;
 import br.com.bibliotech.bibliotechapi.model.Book;
 import br.com.bibliotech.bibliotechapi.repository.AuthorRepository;
@@ -25,7 +26,7 @@ public class BookService {
 
   public Book createBook(BookDTO bookDTO) {
     Author author = authorRepository.findById(bookDTO.getAuthorId())
-      .orElseThrow(() -> new RuntimeException("Author not found with id: " + bookDTO.getAuthorId()));
+      .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + bookDTO.getAuthorId()));
 
 
     Book newBook = new Book();
@@ -49,10 +50,10 @@ public class BookService {
 
   public Book updateBook(UUID id, BookDTO bookDetails) {
     Book book = bookRepository.findById(id)
-      .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
     
     Author author = authorRepository.findById(bookDetails.getAuthorId())
-      .orElseThrow(() -> new RuntimeException("Author not found with id: " + bookDetails.getAuthorId()));
+      .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + bookDetails.getAuthorId()));
 
     book.setTitle(bookDetails.getTitle());
     book.setCategory(bookDetails.getCategory());
@@ -66,7 +67,7 @@ public class BookService {
 
   public void deleteBook(UUID id) {
     Book book = bookRepository.findById(id)
-      .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
     
     bookRepository.delete(book);
   }

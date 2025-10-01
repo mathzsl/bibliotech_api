@@ -1,52 +1,52 @@
 package br.com.bibliotech.bibliotechapi.service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import br.com.bibliotech.bibliotechapi.dto.AuthorDTO;
+import br.com.bibliotech.bibliotechapi.exceptions.ResourceNotFoundException;
+import br.com.bibliotech.bibliotechapi.model.Author;
+import br.com.bibliotech.bibliotechapi.repository.AuthorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.com.bibliotech.bibliotechapi.dto.AuthorDTO;
-import br.com.bibliotech.bibliotechapi.model.Author;
-import br.com.bibliotech.bibliotechapi.repository.AuthorRepository;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AuthorService {
-  
-  @Autowired
-  private AuthorRepository authorRepository;
 
-  public Author createAuthor(AuthorDTO authorDTO) {
-    Author newAuthor = new Author();
-    newAuthor.setName(authorDTO.getName());
-    newAuthor.setNationality(authorDTO.getNationality());
+    @Autowired
+    private AuthorRepository authorRepository;
 
-    return authorRepository.save(newAuthor);
-  }
+    public Author createAuthor(AuthorDTO authorDTO) {
+        Author newAuthor = new Author();
+        newAuthor.setName(authorDTO.getName());
+        newAuthor.setNationality(authorDTO.getNationality());
 
-  public List<Author> findAllAuthors() {
-    return authorRepository.findAll();
-  }
+        return authorRepository.save(newAuthor);
+    }
 
-  public Optional<Author> findAuthorById(UUID id) {
-    return authorRepository.findById(id);
-  }
+    public List<Author> findAllAuthors() {
+        return authorRepository.findAll();
+    }
 
-  public Author updateAuthor(UUID id, AuthorDTO authorDetails) {
-    Author author = authorRepository.findById(id)
-      .orElseThrow(() -> new RuntimeException("Author not found with with id: " + id));
-  
-    author.setName(authorDetails.getName());
-    author.setNationality(authorDetails.getNationality());
+    public Author findAuthorById(UUID id) {
+        return authorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
+    }
 
-    return authorRepository.save(author);
-  }
+    public Author updateAuthor(UUID id, AuthorDTO authorDetails) {
+        Author author = authorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
 
-  public void deleteAuthor(UUID id) {
-    Author author = authorRepository.findById(id)
-      .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
-    
-    authorRepository.delete(author);
-  }
+        author.setName(authorDetails.getName());
+        author.setNationality(authorDetails.getNationality());
+
+        return authorRepository.save(author);
+    }
+
+    public void deleteAuthor(UUID id) {
+        Author author = authorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
+
+        authorRepository.delete(author);
+    }
 }

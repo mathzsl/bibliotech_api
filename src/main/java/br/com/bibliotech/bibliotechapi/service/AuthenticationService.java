@@ -37,7 +37,7 @@ public class AuthenticationService implements UserDetailsService {
     newUser.setName(registerDTO.getName());
     newUser.setEmail(registerDTO.getEmail());
     newUser.setPasswordHash(hashedPassword);
-    newUser.setRole(Role.USER); 
+    newUser.setRole(Role.ADMIN); 
 
     return userRepository.save(newUser);
   }
